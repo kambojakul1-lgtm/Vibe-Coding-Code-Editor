@@ -37,7 +37,6 @@ import WebContainerPreview from "@/modules/webcontainers/components/webcontainer
 import { useWebContainer } from "@/modules/webcontainers/hooks/useWebContainer";
 import {
   AlertCircle,
-  Bot,
   FileText,
   FolderOpen,
   Save,
@@ -48,7 +47,6 @@ import { useParams } from "next/navigation";
 import React, {
   useCallback,
   useEffect,
-  useReducer,
   useRef,
   useState,
 } from "react";
@@ -89,7 +87,7 @@ const MainPlaygroundPage = () => {
     error: containerError,
     instance,
     writeFileSync,
-    // @ts-ignore
+    // @ts-expect-error
   } = useWebContainer({ templateData });
 
   const lastSyncedContent = useRef<Map<string, string>>(new Map());
@@ -201,10 +199,12 @@ const MainPlaygroundPage = () => {
           JSON.stringify(latestTemplateData)
         );
 
-        // @ts-ignore
-          const updateFileContent = (items: any[]) =>
-            // @ts-ignore
-          items.map((item) => {
+        // @ts-expect-error
+          const updateFileContent = (
+          items: (TemplateFile | TemplateFolder)[]
+          ) =>
+          // @ts-expect-error
+          items.map((item) => { 
             if ("folderName" in item) {
               return { ...item, items: updateFileContent(item.items) };
             } else if (
@@ -246,7 +246,7 @@ const MainPlaygroundPage = () => {
     toast.success(
           `Saved ${fileToSave.filename}.${fileToSave.fileExtension}`
         );
-      } catch (error) {
+      } catch (_error) {
          console.error("Error saving file:", error);
         toast.error(
           `Failed to save ${fileToSave.filename}.${fileToSave.fileExtension}`
@@ -276,7 +276,7 @@ const MainPlaygroundPage = () => {
     try {
       await Promise.all(unsavedFiles.map((f) => handleSave(f.id)));
       toast.success(`Saved ${unsavedFiles.length} file(s)`);
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to save some files");
     }
   };
